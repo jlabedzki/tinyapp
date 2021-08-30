@@ -12,15 +12,21 @@ const urlDatabase = {
 
 app.use(morgan('dev'));
 
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
-
 
 app.get('/urls', (req, res) => {
   const templateVariables = {urls: urlDatabase};
   res.render('urls_index', templateVariables);
 })
+
+app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  const templateVariables = {
+    shortURL,
+    longURL: urlDatabase[shortURL]
+  }
+  res.render('urls_show', templateVariables);
+});
 
 
 app.listen(PORT, () => {
