@@ -12,7 +12,9 @@ const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substring(6);
 };
 
-const urlDatabase = {};
+const urlDatabase = {
+  '923sdf': "http://www.lighthouselabs.ca"
+};
 
 
 
@@ -50,6 +52,13 @@ app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[shortURL];
 
   res.redirect(longURL);
+});
+
+app.post('/urls/:shortURL/delete', (req, res) => {
+  const shortURL = req.params.shortURL;
+  console.log('Trying to detect shorturl', shortURL);
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
 });
 
 
