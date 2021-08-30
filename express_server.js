@@ -12,13 +12,7 @@ const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substring(6);
 };
 
-const string = generateRandomString();
-console.log(string);
-
-const urlDatabase = {
-  'b2xBn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
-};
+const urlDatabase = {};
 
 
 
@@ -44,8 +38,18 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  console.log(req.body);
-  res.send(req.body);
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL
+  console.log(urlDatabase);
+  res.redirect(`/urls/${shortURL}`);
+});
+
+app.get('/u/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  const longURL = urlDatabase[shortURL];
+
+  res.redirect(longURL);
 });
 
 
