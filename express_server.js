@@ -19,6 +19,18 @@ const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substring(6);
 };
 
+//Helper function used to get a userID by email
+const getUserbyEmail = (email, database) => {
+
+  for (const profile in database) {
+    if (database[profile].email === email) {
+      return profile;
+    }
+  }
+
+  return false;
+}
+
 //Placeholder for our url data
 const urlDatabase = {};
 
@@ -174,15 +186,17 @@ app.post('/register', (req, res) => {
   }
 
   //If the email entered matches an existing account's email address, then we give a 400 status code
-  for (const profiles in users) {
-    if (users[profiles].email === req.body.email) {
-      res.redirect(400, 'back');
-    }
+  const user = getUserbyEmail(req.body.email, users);
+
+  if (user) {
+    res.redirect(400, 'back');
   }
+
 
   const randomUserID = generateRandomString();
   const hashedPass = bcrypt.hashSync(req.body.password, 10);
 
+  //Generating a user profile with a hashed password using bcrypt
   users[randomUserID] = {
     id: randomUserID,
     email: req.body.email,
@@ -195,26 +209,34 @@ app.post('/register', (req, res) => {
 
 
 
-//Check to see if the email address and password entered in login match a profile in the users object. If so, set the cookie to the ID of the user and redirect to /urls page. If not, throw error, statuscode 403.
+//Login form
 app.post('/login', (req, res) => {
+
+  //If the user doesn't fill either the email or password form, then we give a 400 statuscode
   if (!req.body.email || !req.body.password) {
     res.redirect(400, 'back');
   }
 
+  //Initialize an email and password match as false, and an undefined userID
   let emailMatch = false;
   let passwordMatch = false;
   let randomUserID;
 
-  for (const profiles in users) {
-    if (users[profiles].email === req.body.email) {
-      emailMatch = true;
-      if (bcrypt.compareSync(req.body.password, users[profiles].password)) {
-        passwordMatch = true;
-        randomUserID = users[profiles].id;
-      }
+  //If the email provided matches an email in the users object, then we set email match to true and then check the password
+  //If the password matches, then we set the randomUserId to the id of the user profile that matched
+  const user = getUserbyEmail(req.body.email, users);
+
+  if (user) {
+    emailMatch = true;
+
+    if (bcrypt.compareSync(req.body.password, users[user].password)) {
+      passwordMatch = true;
+      randomUserID = user;
     }
   }
 
+
+  //If both email and password match, then we set the cookie user_id to match the randomUserID, encrypted using cookie-sessions. If there's no match then we give a 403 statuscode
   if (emailMatch === true && passwordMatch === true) {
     req.session.user_id = randomUserID;
     res.redirect('/urls');
