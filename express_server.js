@@ -14,22 +14,25 @@ const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substring(6);
 };
 
-const urlDatabase = {
-};
 
-
+const urlDatabase = {};
 const users = {};
+
+// const urlsForUser = id => {
+//   const ids = Object.keys(urlDatabase);
+
+//   const urls = ids.filter(el => el === id);
+
+//   return urls;
+// }
 
 
 //URL index template
 app.get('/urls', (req, res) => {
+
   const templateVariables = {
     urls: urlDatabase,
-    user: {
-      id: req.cookies['user_id'],
-      email: users[req.cookies['user_id']].email,
-      password: users[req.cookies['user_id']].password
-    }
+    user: users[req.cookies.user_id]
   };
   res.render('urls_index', templateVariables);
 });
@@ -38,18 +41,8 @@ app.get('/urls', (req, res) => {
 
 //New URL template
 app.get('/urls/new', (req, res) => {
-  // for (const profiles in users) {
-  //   if (profiles !== req.cookies.user_id) {
-  //     res.redirect('/login');
-  //   }
-  // }
-  console.log(req.cookies.user_id);
   const templateVariables = {
-    user: {
-      id: req.cookies['user_id'],
-      email: users[req.cookies['user_id']].email,
-      password: users[req.cookies['user_id']].password
-    }
+    user: users[req.cookies.user_id]
   }
 
   if (users[req.cookies.user_id] === undefined) {
@@ -69,18 +62,10 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVariables = {
     shortURL,
     longURL: urlDatabase[shortURL].longURL,
-    urlID: urlDatabase[shortURL].userID,
-    user: {
-      id: req.cookies['user_id'],
-      email: users[req.cookies['user_id']].email,
-      password: users[req.cookies['user_id']].password
-    }
+    user: users[req.cookies.user_id]
   }
 
-  // if (user.id !== urlDatabase[shortURL].userID) {}
-
   res.render('urls_show', templateVariables);
-
 });
 
 
@@ -119,8 +104,12 @@ app.post('/urls', (req, res) => {
 //Redirect to the original URL that client provided when creating shortURL
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
+  if (!urlDatabase[shortURL]) {
+    res.status(404).send('Sorry, we cannot find that!')
+  }
 
   const longURL = urlDatabase[shortURL].longURL;
+
 
   res.redirect(longURL);
 });
@@ -155,12 +144,12 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post('/register', (req, res) => {
 
   if (!req.body.email || !req.body.password) {
-    throw Error('Statuscode 400: Bad Request\nPlease enter a valid email address and password.')
+    res.redirect(400, 'back');
   }
 
   for (const profiles in users) {
     if (users[profiles].email === req.body.email) {
-      throw Error('Statuscode 400: Bad Request\nThat account already exists');
+      res.redirect(400, 'back');
     }
   }
 
@@ -181,7 +170,8 @@ app.post('/register', (req, res) => {
 //Check to see if the email address and password entered in login match a profile in the users object. If so, set the cookie to the ID of the user and redirect to /urls page. If not, throw error, statuscode 403.
 app.post('/login', (req, res) => {
   if (!req.body.email || !req.body.password) {
-    throw Error('Statuscode 400: Bad Request\nPlease enter a valid email address and password.')
+    // res.send('Statuscode 400 (Bad Request): Please enter a valid email address and password.')
+    res.redirect(400, 'back');
   }
 
   let emailMatch = false;
@@ -202,7 +192,7 @@ app.post('/login', (req, res) => {
     res.cookie('user_id', randomUserID);
     res.redirect('/urls');
   } else {
-    throw Error('Statuscode 403: Forbidden\nEmail or password does not match');
+    res.redirect(403, 'back');
   }
 });
 
