@@ -115,14 +115,13 @@ app.post('/urls/:shortURL', (req, res) => {
 //   res.redirect('/urls');
 // });
 
-//Clear cookie after logout
-app.post('/logout', (req, res) => {
-  const username = Object.keys(req.cookies['user_id']);
-  console.log(username);
+// Clear cookie after logout
+// app.post('/logout', (req, res) => {
+//   const username = Object.keys(req.cookies['user_id']);
   
-  res.clearCookie('user_id');
-  res.redirect('/urls');
-});
+//   res.clearCookie('user_id');
+//   res.redirect('/urls');
+// });
 
 //Generate user profile and track the user id with a cookie.
 app.post('/register', (req, res) => {
