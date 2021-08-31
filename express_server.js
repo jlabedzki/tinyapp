@@ -14,12 +14,15 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }));
 
+//Used to generate shortened URLs and userIDs
 const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substring(6);
 };
 
-
+//Placeholder for our url data
 const urlDatabase = {};
+
+//Placeholder for user profiles (id, email, password(hashed))
 const users = {};
 
 
@@ -55,6 +58,8 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
+  //If the short URL doesn't exist, then we give a 404 statuscode
+  //If the user tries to view a URL that they didn't create, then we give a 403 status code
   if (!urlDatabase[shortURL]) {
     res.redirect(404, '/urls');
   } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
@@ -88,6 +93,10 @@ app.get('/login', (req, res) => {
 
 //Generate a shortURL, add it to our url database, and then redirect to url_shows.ejs
 app.post('/urls', (req, res) => {
+
+  //If the user is not logged in, redirect them to login page before creating a shortened URL
+
+  //Once the user is logged in, we add the short URL to our urldatabase object as a key, with a object value containing the respective long URL as well as the ID of the user that created the short URL
   if (users[req.session.user_id] === undefined) {
     res.redirect('/login');
   } else {
@@ -106,6 +115,8 @@ app.post('/urls', (req, res) => {
 //Redirect to the original URL that client provided when creating shortURL
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
+
+  //If the url doesn't exist in the urldatabase, then we give a 404 statuscode
   if (!urlDatabase[shortURL]) {
     res.status(404).send('Sorry, we cannot find that!')
   }
@@ -121,8 +132,8 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
 
-  //if shortURL doesn't exist, return html with relevent error message and redirect back
-  //if shorturl isn't in the list of the user-ids urls, then return relevent html error and redirect back
+  //If the shortURl doesn't exist, then we give a 404 statuscode
+  //If the user is trying to delete a shortURL that they didn't create, then we give a 403 statuscode
   if (!urlDatabase[shortURL]) {
     res.redirect(404, 'back');
   } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
@@ -137,13 +148,10 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 //Edit a shortURL to link to a different longURL
 app.post('/urls/:shortURL', (req, res) => {
-  let shortURL;
-  for (const short in urlDatabase) {
-    if (short === req.params.shortURL) {
-      shortURL = short;
-    }
-  }
+  const shortURL = req.params.shortURL;
 
+  //If the shortURL is not found, then we give a 404 statuscode
+  //If the user is trying to edit a shortURL that they didn't create, then we give a 403 status code
   if (!urlDatabase[shortURL]) {
     res.redirect(404, 'back');
   } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
@@ -160,10 +168,12 @@ app.post('/urls/:shortURL', (req, res) => {
 //Generate user profile and track the user id with a cookie.
 app.post('/register', (req, res) => {
 
+  //If the user doesn't fill out either the email or password forms, then we give a 400 statuscode
   if (!req.body.email || !req.body.password) {
     res.redirect(400, 'back');
   }
 
+  //If the email entered matches an existing account's email address, then we give a 400 status code
   for (const profiles in users) {
     if (users[profiles].email === req.body.email) {
       res.redirect(400, 'back');
