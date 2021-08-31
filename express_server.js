@@ -59,13 +59,19 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
-  const templateVariables = {
-    shortURL,
-    longURL: urlDatabase[shortURL].longURL,
-    user: users[req.cookies.user_id]
-  }
+  if (!urlDatabase[shortURL]) {
+    res.redirect(404, '/urls');
+  } else if (urlDatabase[shortURL].userID !== req.cookies.user_id) {
+    res.redirect(403, '/urls');
+  } else {
+    const templateVariables = {
+      shortURL,
+      longURL: urlDatabase[shortURL],
+      user: users[req.cookies.user_id]
+    }
 
-  res.render('urls_show', templateVariables);
+    res.render('urls_show', templateVariables);
+  }
 });
 
 
@@ -87,7 +93,6 @@ app.get('/login', (req, res) => {
 //Generate a shortURL, add it to our url database, and then redirect to url_shows.ejs
 app.post('/urls', (req, res) => {
   if (users[req.cookies.user_id] === undefined) {
-    console.log('Must be logged in');
     res.redirect('/login');
   } else {
     const shortURL = generateRandomString();
@@ -95,6 +100,7 @@ app.post('/urls', (req, res) => {
       longURL: req.body.longURL,
       userID: req.cookies.user_id
     }
+
     res.redirect(`/urls/${shortURL}`);
   }
 });
@@ -110,7 +116,6 @@ app.get('/u/:shortURL', (req, res) => {
 
   const longURL = urlDatabase[shortURL].longURL;
 
-
   res.redirect(longURL);
 });
 
@@ -119,8 +124,18 @@ app.get('/u/:shortURL', (req, res) => {
 //Delete a shortURL
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
+
+  //if shortURL doesn't exist, return html with relevent error message and redirect back
+  //if shorturl isn't in the list of the user-ids urls, then return relevent html error and redirect back
+  console.log(urlDatabase);
+  if (!urlDatabase[shortURL]) {
+    res.redirect(404, 'back');
+  } else if (urlDatabase[shortURL].userID !== req.cookies.user_id) {
+    res.redirect(403, 'back');
+  } else {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  }
 });
 
 
@@ -134,8 +149,15 @@ app.post('/urls/:shortURL', (req, res) => {
     }
   }
 
-  urlDatabase[shortURL].longURL = req.body.longURL;
-  res.redirect('/urls');
+  if (!urlDatabase[shortURL]) {
+    res.redirect(404, 'back');
+  } else if (urlDatabase[shortURL].userID !== req.cookies.user_id) {
+    res.redirect(403, 'back');
+  } else {
+
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    res.redirect('/urls');
+  }
 });
 
 
