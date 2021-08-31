@@ -1,18 +1,18 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/urls">TinyApp</a>
-      <% if (!username) { %>
+      <% if (!user) { %>
         <form method="POST" action="/login" class="form-inline">
           <input name="username" type="text"  placeholder="Username"/>
           <button type="submit" class="btn btn-warning btn-sm" style="margin: auto; border: 1px solid rgb(72, 72, 72);">Submit</button>
         </form>
       <% } else { %>
 
-        <h5 style="color: rgb(251, 250, 252); margin: auto; margin-left: 10px; margin-right: 20px;"><%= username %></h5>
+        <h5 style="color: rgb(251, 250, 252); margin: auto; margin-left: 10px; margin-right: 20px;"><%= user.email %></h5>
         <form method="POST" action="/logout" class="form-inline">
           <button type="submit" class="btn btn-warning btn-sm" style="margin: auto; margin-right: 10px; border: 1px solid rgb(72, 72, 72);">Logout</button>
         </form>
-      <% } %>
+      <!-- <% } %> -->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
