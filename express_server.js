@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 
@@ -176,11 +177,12 @@ app.post('/register', (req, res) => {
   }
 
   const randomUserID = generateRandomString();
+  const hashedPass = bcrypt.hashSync(req.body.password, 10);
 
   users[randomUserID] = {
     id: randomUserID,
     email: req.body.email,
-    password: req.body.password,
+    password: hashedPass
   };
 
   res.cookie('user_id', randomUserID);
@@ -192,7 +194,6 @@ app.post('/register', (req, res) => {
 //Check to see if the email address and password entered in login match a profile in the users object. If so, set the cookie to the ID of the user and redirect to /urls page. If not, throw error, statuscode 403.
 app.post('/login', (req, res) => {
   if (!req.body.email || !req.body.password) {
-    // res.send('Statuscode 400 (Bad Request): Please enter a valid email address and password.')
     res.redirect(400, 'back');
   }
 
@@ -203,7 +204,7 @@ app.post('/login', (req, res) => {
   for (const profiles in users) {
     if (users[profiles].email === req.body.email) {
       emailMatch = true;
-      if (users[profiles].password === req.body.password) {
+      if (bcrypt.compareSync(req.body.password, users[profiles].password)) {
         passwordMatch = true;
         randomUserID = users[profiles].id;
       }
