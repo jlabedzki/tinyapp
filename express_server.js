@@ -67,6 +67,11 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
+//Login template
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
 //Generate a shortURL, add it to our url database, and then redirect to url_shows.ejs
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
@@ -121,6 +126,17 @@ app.post('/logout', (req, res) => {
 
 //Generate user profile and track the user id with a cookie.
 app.post('/register', (req, res) => {
+
+  if (!req.body.email || !req.body.password) {
+    throw Error('Error 400: Bad Request\nPlease enter a valid email address and password.')
+  }
+
+  for (const profiles in users) {
+    if (users[profiles].email === req.body.email) {
+      throw Error('Error 400: Bad Request\nThat account already exists');
+    }
+  }
+
   const randomUserID = generateRandomString();
 
   users[randomUserID] = {
@@ -129,7 +145,6 @@ app.post('/register', (req, res) => {
     password: req.body.password
   };
 
-  console.log(users);
 
   res.cookie('user_id', randomUserID);
   res.redirect('/urls');
