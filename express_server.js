@@ -2,7 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const { getUserbyEmail, generateRandomString } = require('./helpers');
+const { getUserByEmail, generateRandomString } = require('./helpers');
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
@@ -171,7 +171,7 @@ app.post('/register', (req, res) => {
   }
 
   //If the email entered matches an existing account's email address, then we give a 400 status code
-  const user = getUserbyEmail(req.body.email, users);
+  const user = getUserByEmail(req.body.email, users);
   if (user) {
     res.redirect(400, 'back');
   }
@@ -207,7 +207,7 @@ app.post('/login', (req, res) => {
 
   //If the email provided matches an email in the users object, then we set email match to true and then check the password
   //If the password matches, then we set the randomUserId to the id of the user profile that matched
-  const user = getUserbyEmail(req.body.email, users);
+  const user = getUserByEmail(req.body.email, users);
   if (user) {
     emailMatch = true;
 
