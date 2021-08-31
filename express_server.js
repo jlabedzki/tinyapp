@@ -108,47 +108,67 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls');
 });
 
-// //Track username after login submission via cookie
-// app.post('/login', (req, res) => {
-//   const username = req.body.username;
-//   res.cookie('username', username);
-//   res.redirect('/urls');
-// });
 
-// Clear cookie after logout
-// app.post('/logout', (req, res) => {
-//   const username = Object.keys(req.cookies['user_id']);
-  
-//   res.clearCookie('user_id');
-//   res.redirect('/urls');
-// });
 
 //Generate user profile and track the user id with a cookie.
 app.post('/register', (req, res) => {
-
+  
   if (!req.body.email || !req.body.password) {
-    throw Error('Error 400: Bad Request\nPlease enter a valid email address and password.')
+    throw Error('Statuscode 400: Bad Request\nPlease enter a valid email address and password.')
   }
-
+  
   for (const profiles in users) {
     if (users[profiles].email === req.body.email) {
-      throw Error('Error 400: Bad Request\nThat account already exists');
+      throw Error('Statuscode 400: Bad Request\nThat account already exists');
     }
   }
-
+  
   const randomUserID = generateRandomString();
-
+  
   users[randomUserID] = {
     id: randomUserID,
     email: req.body.email,
     password: req.body.password
   };
-
-
+  
   res.cookie('user_id', randomUserID);
   res.redirect('/urls');
 });
 
+//Check to see if the email address and password entered in login match a profile in the users object. If so, set the cookie to the ID of the user and redirect to /urls page. If not, throw error, statuscode 403.
+app.post('/login', (req, res) => {
+  if (!req.body.email || !req.body.password) {
+    throw Error('Statuscode 400: Bad Request\nPlease enter a valid email address and password.')
+  }
+
+  let emailMatch = false;
+  let passwordMatch = false;
+  let randomUserID;
+  
+  for (const profiles in users) {
+    if (users[profiles].email === req.body.email) {
+      emailMatch = true;
+      if (users[profiles].password === req.body.password) {
+        passwordMatch = true;
+        randomUserID = users[profiles].id;
+      }
+    }
+  }
+
+  if (emailMatch === true && passwordMatch === true) {
+    res.cookie('user_id', randomUserID);
+    res.redirect('/urls');
+  } else {
+    throw Error('Statuscode 403: Forbidden\nEmail or password does not match');
+  }
+});
+
+//Redirect to login page after logout
+app.post('/logout', (req, res) => {
+  res.clearCookie('user_id');
+  res.redirect('/login');
+  console.log(users);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
