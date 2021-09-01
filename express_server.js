@@ -23,6 +23,15 @@ const urlDatabase = {};
 const users = {};
 
 
+//Redirect to url_index page or login page based on whether or not the user is logged in.
+app.get('/', (req, res) => {
+  if (users[req.session.user_id] === undefined) {
+    res.redirect('/login');
+  }
+  res.redirect('/urls');
+})
+
+
 //URL index template
 app.get('/urls', (req, res) => {
 
@@ -76,6 +85,9 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //Register template
 app.get('/register', (req, res) => {
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  }
   res.render('register');
 });
 
@@ -83,6 +95,9 @@ app.get('/register', (req, res) => {
 
 //Login template
 app.get('/login', (req, res) => {
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  }
   res.render('login');
 });
 
