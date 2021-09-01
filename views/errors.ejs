@@ -16,15 +16,8 @@
     <%- include('partials/_header') %>
   </header>
 
-  <div class="container" style="padding: 10px; margin: auto; display: inline-block;">
-    <h4 style="margin: 10px">Create Account</h4>
-    <form method="POST" action="/register">
-      <input type="email" name="email" placeholder="Enter your email address" style="width: 300px; margin: 10px;" /><br>
-      <input type="password" name="password" placeholder="Choose a password" style="width: 300px; margin: 10px;" /><br>
-      <button type="submit" class="btn btn-danger btn-sm" style="margin: 10px; width: 150px;">Submit</button>
-    </form>
-  </div>
-
+  <p>Error! Statuscode: <%= statusCode %>, <%= errorMessage %>
+  </p>
 
 
   <!-- Bootstrap JS -->

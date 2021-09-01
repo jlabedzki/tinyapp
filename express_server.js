@@ -2,7 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const { getUserByEmail, generateRandomString } = require('./helpers');
+const { getUserByEmail, generateRandomString, redirectToLogin, checkUrlExistence, validateUserID, credentialValidator, errorHandler } = require('./helpers');
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
@@ -15,6 +15,22 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }));
 
+// app.get('/errors', (req, res) => {
+
+//   const errorMessages = {
+//     '404': `Oops! The page you're looking for could not be found.`,
+//     '403': `Sorry! You don't have permission to access that content.`,
+//   };
+
+//   const templateVariables = {
+//     statusCode,
+//     errorMessage: errorMessages[statusCode],
+//     user: users[req.session.user_id]
+//   };
+
+//   res.render('errors', templateVariables);
+// });
+
 
 //Placeholder for our url data
 const urlDatabase = {};
@@ -26,12 +42,11 @@ const users = {};
 //Redirect to url_index page or login page based on whether or not the user is logged in.
 app.get('/', (req, res) => {
 
-  if (users[req.session.user_id] === undefined) {
-    res.redirect('/login');
-  }
+  //If user isn't logged in, use helper function to redirect to login page
+  redirectToLogin(req, res, users);
 
   res.redirect('/urls');
-})
+});
 
 
 //URL index template
@@ -52,11 +67,10 @@ app.get('/urls/new', (req, res) => {
 
   const templateVariables = {
     user: users[req.session.user_id]
-  }
+  };
 
-  if (users[req.session.user_id] === undefined) {
-    res.redirect('/login');
-  }
+  //If user isn't logged in, use helper function to redirect to login page
+  redirectToLogin(req, res, users);
 
   res.render('urls_new', templateVariables);
 });
@@ -69,20 +83,16 @@ app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the short URL doesn't exist, then we give a 404 statuscode
-  //If the user tries to view a URL that they didn't create, then we give a 403 status code
-  if (!urlDatabase[shortURL]) {
-    res.redirect(404, '/urls');
-  }
+  checkUrlExistence(shortURL, res, urlDatabase);
 
-  if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.redirect(403, '/urls');
-  }
+  //If the user tries to view a URL that they didn't create, then we give a 403 status code
+  validateUserID(shortURL, req, res, urlDatabase);
 
   const templateVariables = {
     shortURL,
     longURL: urlDatabase[shortURL].longURL,
     user: users[req.session.user_id]
-  }
+  };
 
   res.render('urls_show', templateVariables);
 });
@@ -97,7 +107,12 @@ app.get('/register', (req, res) => {
     res.redirect('/urls');
   }
 
-  res.render('register');
+  const templateVariables = {
+    urls: urlDatabase,
+    user: users[req.session.user_id]
+  };
+
+  res.render('register', templateVariables);
 });
 
 
@@ -109,7 +124,12 @@ app.get('/login', (req, res) => {
     res.redirect('/urls');
   }
 
-  res.render('login');
+  const templateVariables = {
+    urls: urlDatabase,
+    user: users[req.session.user_id]
+  };
+
+  res.render('login', templateVariables);
 });
 
 
@@ -118,19 +138,17 @@ app.get('/login', (req, res) => {
 app.post('/urls', (req, res) => {
 
   //If the user is not logged in, redirect them to login page before creating a shortened URL
-  if (users[req.session.user_id] === undefined) {
-    res.redirect('/login');
-  }
+  redirectToLogin(req, res, users);
 
-  //Once the user is logged in, we add the short URL to our urldatabase object as a key, with a object value containing the respective long URL as well as the ID of the user that created the short URL
+  //Once the user is logged in, we add the short URL to our urldatabase object as a key with an object value containing the respective long URL as well as the ID of the user that created the short URL
   const shortURL = generateRandomString();
+
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: req.session.user_id
-  }
+  };
 
   res.redirect(`/urls/${shortURL}`);
-
 });
 
 
@@ -142,7 +160,7 @@ app.get('/u/:shortURL', (req, res) => {
 
   //If the url doesn't exist in the urldatabase, then we give a 404 statuscode
   if (!urlDatabase[shortURL]) {
-    res.status(404).send('Sorry, we cannot find that!')
+    res.status(404).send('Sorry, we cannot find that!');
   }
 
   const longURL = urlDatabase[shortURL].longURL;
@@ -158,19 +176,14 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the shortURl doesn't exist, then we give a 404 statuscode
-  //If the user is trying to delete a shortURL that they didn't create, then we give a 403 statuscode
-  if (!urlDatabase[shortURL]) {
-    res.redirect(404, 'back');
-  }
+  checkUrlExistence(shortURL, res, urlDatabase);
 
-  if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.redirect(403, 'back');
-  }
+  //If the user is trying to delete a shortURL that they didn't create, then we give a 403 statuscode
+  validateUserID(shortURL, req, res, urlDatabase);
 
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
-
 
 
 //Edit a shortURL to link to a different longURL
@@ -178,14 +191,10 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the shortURL is not found, then we give a 404 statuscode
-  if (!urlDatabase[shortURL]) {
-    res.redirect(404, 'back');
-  }
+  checkUrlExistence(shortURL, res, urlDatabase);
 
   //If the user is trying to edit a shortURL that they didn't create, then we give a 403 status code
-  if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.redirect(403, 'back');
-  }
+  validateUserID(shortURL, req, res, urlDatabase);
 
   urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect('/urls');
@@ -197,9 +206,7 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post('/register', (req, res) => {
 
   //If the user doesn't fill out either the email or password forms, then we give a 400 statuscode
-  if (!req.body.email || !req.body.password) {
-    res.redirect(400, 'back');
-  }
+  credentialValidator(req, res);
 
   //Use helper function to find a userID by email
   const user = getUserByEmail(req.body.email, users);
@@ -219,6 +226,7 @@ app.post('/register', (req, res) => {
     password: hashedPass
   };
 
+  //Assign cookie
   req.session.user_id = randomUserID;
   res.redirect('/urls');
 });
@@ -229,9 +237,7 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
 
   //If the user doesn't fill either the email or password form, then we give a 400 statuscode
-  if (!req.body.email || !req.body.password) {
-    res.redirect(400, 'back');
-  }
+  credentialValidator(req, res);
 
   //Initialize an email and password match as false, and an undefined userID
   let emailMatch = false;
@@ -252,7 +258,6 @@ app.post('/login', (req, res) => {
     }
   }
 
-
   //If both email and password match, then we set the cookie user_id to match the randomUserID, encrypted using cookie-sessions. If there's no match then we give a 403 statuscode
   if (emailMatch === true && passwordMatch === true) {
     req.session.user_id = randomUserID;
@@ -260,7 +265,8 @@ app.post('/login', (req, res) => {
   }
 
   //If the password and email do not match to a user in the database, then we give a 403 status code
-  res.redirect(403, 'back');
+  res.redirect(403, '/login');
+  // errorHandler(403);
 });
 
 
@@ -270,8 +276,6 @@ app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/login');
 });
-
-
 
 app.listen(PORT);
 
