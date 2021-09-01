@@ -31,8 +31,11 @@ const urlExistence = (shortURL, urlDatabase) => {
 
 const validateUserID = (shortURL, req, res, urlDatabase) => {
   if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.redirect(403, '/urls');
+    // res.redirect(403, '/urls');
+    return false;
   }
+
+  return true;
 };
 
 const credentialValidator = (req, res) => {
@@ -47,9 +50,9 @@ const credentialValidator = (req, res) => {
 const errorHandler = (statusCode, req, res, users) => {
 
   const errorMessages = {
-    '404': `Oops! The page you're looking for could not be found.`,
-    '403': `Sorry! You don't have permission to access that content.`,
-    '400': 'something'
+    '404': `Error 404: Not found.`,
+    '403': `Error 403: Forbidden.`,
+    '400': `Error 400: Bad request.`
   };
 
   const templateVariables = {

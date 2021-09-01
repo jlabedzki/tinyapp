@@ -10,6 +10,7 @@ const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
+app.use(express.static("public"));
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
@@ -77,7 +78,9 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 
   //If the user tries to view a URL that they didn't create, then we give a 403 status code
-  validateUserID(shortURL, req, res, urlDatabase);
+  if (!validateUserID(shortURL, req, res, urlDatabase)) {
+    errorHandler(403, req, res, users);
+  }
 
   const templateVariables = {
     shortURL,
@@ -197,7 +200,9 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
   }
 
   //If the user is trying to delete a shortURL that they didn't create, then we give a 403 statuscode
-  validateUserID(shortURL, req, res, urlDatabase);
+  if (!validateUserID(shortURL, req, res, urlDatabase)) {
+    errorHandler(403, req, res, users);
+  }
 
   delete urlDatabase[shortURL];
   res.redirect('/urls');
@@ -214,7 +219,9 @@ app.put('/urls/:shortURL', (req, res) => {
   }
 
   //If the user is trying to edit a shortURL that they didn't create, then we give a 403 status code
-  validateUserID(shortURL, req, res, urlDatabase);
+  if (!validateUserID(shortURL, req, res, urlDatabase)) {
+    errorHandler(403, req, res, users);
+  }
 
   urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect('/urls');
@@ -299,6 +306,14 @@ app.post('/login', (req, res) => {
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/login');
+});
+
+app.use((req, res, next) => {
+  res.status(404).redirect('/urls');
+})
+
+app.use((req, res, next) => {
+  res.status(403).send('Forbidden!');
 });
 
 app.listen(PORT);

@@ -27,15 +27,17 @@
       <p style="font-size: 18px; font-weight: 500;">
         Unique visitors: <%= urls[shortURL].uniqueVisits %>
       </p>
-      <p style="font-size: 18px; font-weight: 500;">Visitor Info:</p>
-      <div class="card-body"
-        style="position: center; display: inline-block; border: 1px solid rgb(172, 172, 172); height: 150px; width: 600px; background-color: rgb(250, 250, 250); font: 16px/26px; overflow: auto; resize: vertical;">
-        <% for (const visitor of urls[shortURL].visits) { %>
-          <p>
-            <%= urls[shortURL].visits.indexOf(visitor) + 1 %>: <%= visitor %>
-          </p>
-          <% } %>
-      </div>
+      <% if (urls[shortURL].visits.length> 0) { %>
+        <p style="font-size: 18px; font-weight: 500;">Visitor Info:</p>
+        <div class="card-body"
+          style="position: center; display: inline-block; border: 1px solid rgb(172, 172, 172); height: 150px; width: 600px; background-color: rgb(250, 250, 250); font: 16px/26px; overflow: auto; resize: vertical;">
+          <% for (const visitor of urls[shortURL].visits) { %>
+            <p>
+              <%= urls[shortURL].visits.indexOf(visitor) + 1 %>: <%= visitor %>
+            </p>
+            <% } %>
+        </div>
+        <% } %>
     </div>
     <div class="card text-center" style="background-color: rgb(235, 235, 235);">
       <div class="card-body" style="display: inline-block; margin: auto;">
