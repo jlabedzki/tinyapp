@@ -20,16 +20,21 @@ const redirectToLogin = (req, res, users) => {
   }
 };
 
-const checkUrlExistence = (shortURL, res, urlDatabase) => {
+const urlExistence = (shortURL, urlDatabase) => {
   if (!urlDatabase[shortURL]) {
-    res.redirect(404, '/urls');
+    return false;
   }
+
+  return true;
 };
 
 const validateUserID = (shortURL, req, res, urlDatabase) => {
   if (urlDatabase[shortURL].userID !== req.session.user_id) {
     res.redirect(403, '/urls');
+    // return false;
   }
+
+  // return true;
 };
 
 const credentialValidator = (req, res) => {
@@ -38,21 +43,20 @@ const credentialValidator = (req, res) => {
   }
 };
 
-const errorHandler = (statusCode) => {
+const errorHandler = (statusCode, req, res, users) => {
 
   const errorMessages = {
     '404': `Oops! The page you're looking for could not be found.`,
     '403': `Sorry! You don't have permission to access that content.`,
   };
 
-  app.get('/errors', (req, res) => {
-    const templateVariables = {
-      statusCode,
-      errorMessage: errorMessages[statusCode],
-      user: users[req.session.user_id]
-    };
-    res.render('errors', templateVariables);
-  });
+  const templateVariables = {
+    statusCode,
+    errorMessage: errorMessages[statusCode],
+    user: users[req.session.user_id]
+  };
+
+  res.render('errors', templateVariables);
 };
 
-module.exports = { getUserByEmail, generateRandomString, redirectToLogin, checkUrlExistence, validateUserID, credentialValidator, errorHandler };
+module.exports = { getUserByEmail, generateRandomString, redirectToLogin, urlExistence, validateUserID, credentialValidator, errorHandler };

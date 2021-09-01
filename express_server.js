@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
-const { getUserByEmail, generateRandomString, redirectToLogin, checkUrlExistence, validateUserID, credentialValidator, errorHandler } = require('./helpers');
+const { getUserByEmail, generateRandomString, redirectToLogin, urlExistence, validateUserID, credentialValidator, errorHandler } = require('./helpers');
 const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
@@ -16,23 +16,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
-
-// app.get('/errors', (req, res) => {
-
-//   const errorMessages = {
-//     '404': `Oops! The page you're looking for could not be found.`,
-//     '403': `Sorry! You don't have permission to access that content.`,
-//   };
-
-//   const templateVariables = {
-//     statusCode,
-//     errorMessage: errorMessages[statusCode],
-//     user: users[req.session.user_id]
-//   };
-
-//   res.render('errors', templateVariables);
-// });
-
 
 //Placeholder for our url data
 const urlDatabase = {};
@@ -85,7 +68,10 @@ app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the short URL doesn't exist, then we give a 404 statuscode
-  checkUrlExistence(shortURL, res, urlDatabase);
+  if (!urlDatabase[shortURL]) {
+    // res.redirect(404, '/urls');
+    errorHandler(404, req, res, users);
+  }
 
   //If the user tries to view a URL that they didn't create, then we give a 403 status code
   validateUserID(shortURL, req, res, urlDatabase);
@@ -161,7 +147,7 @@ app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the url doesn't exist in the urldatabase, then we give a 404 statuscode
-  if (!urlDatabase[shortURL]) {
+  if (!urlExistence(shortURL, urlDatabase)) {
     res.status(404).send('Sorry, we cannot find that!');
   }
 
@@ -178,7 +164,9 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the shortURl doesn't exist, then we give a 404 statuscode
-  checkUrlExistence(shortURL, res, urlDatabase);
+  if (!urlExistence(shortURL, urlDatabase)) {
+    errorHandler(404, req, res, users);
+  }
 
   //If the user is trying to delete a shortURL that they didn't create, then we give a 403 statuscode
   validateUserID(shortURL, req, res, urlDatabase);
@@ -193,7 +181,9 @@ app.put('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the shortURL is not found, then we give a 404 statuscode
-  checkUrlExistence(shortURL, res, urlDatabase);
+  if (!urlExistence(shortURL, urlDatabase)) {
+    errorHandler(404, req, res, users);
+  }
 
   //If the user is trying to edit a shortURL that they didn't create, then we give a 403 status code
   validateUserID(shortURL, req, res, urlDatabase);
@@ -267,8 +257,9 @@ app.post('/login', (req, res) => {
   }
 
   //If the password and email do not match to a user in the database, then we give a 403 status code
-  res.redirect(403, '/login');
-  // errorHandler(403);
+  // res.redirect(403, '/login');
+
+  errorHandler(403, res);
 });
 
 
