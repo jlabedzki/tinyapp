@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const { getUserByEmail, generateRandomString, redirectToLogin, checkUrlExistence, validateUserID, credentialValidator, errorHandler } = require('./helpers');
 const bcrypt = require('bcrypt');
 const app = express();
@@ -10,6 +11,7 @@ const PORT = 8080;
 app.set('view engine', 'ejs');
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
@@ -171,7 +173,7 @@ app.get('/u/:shortURL', (req, res) => {
 
 
 //Delete a shortURL
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL/delete', (req, res) => {
 
   const shortURL = req.params.shortURL;
 
@@ -187,7 +189,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 
 //Edit a shortURL to link to a different longURL
-app.post('/urls/:shortURL', (req, res) => {
+app.put('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   //If the shortURL is not found, then we give a 404 statuscode
