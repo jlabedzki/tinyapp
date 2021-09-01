@@ -23,6 +23,9 @@ const urlDatabase = {};
 //Placeholder for user profiles (id, email, password(hashed))
 const users = {};
 
+//Placeholder for url analytics
+const analytics = {};
+
 
 //Redirect to url_index page or login page based on whether or not the user is logged in.
 app.get('/', (req, res) => {
@@ -78,7 +81,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
   const templateVariables = {
     shortURL,
-    longURL: urlDatabase[shortURL].longURL,
+    urls: urlDatabase,
     user: users[req.session.user_id]
   };
 
@@ -133,7 +136,10 @@ app.post('/urls', (req, res) => {
 
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id
+    userID: req.session.user_id,
+    visits: 0,
+    uniqueVisits: 0,
+    visitsByCreator: 0
   };
 
   res.redirect(`/urls/${shortURL}`);
@@ -141,7 +147,7 @@ app.post('/urls', (req, res) => {
 
 
 
-//Redirect to the original URL that client provided when creating shortURL
+//Allow shortURLs to link back to the original link that the user provided
 app.get('/u/:shortURL', (req, res) => {
 
   const shortURL = req.params.shortURL;
@@ -151,7 +157,23 @@ app.get('/u/:shortURL', (req, res) => {
     res.status(404).send('Sorry, we cannot find that!');
   }
 
+  //Assign a link
   const longURL = urlDatabase[shortURL].longURL;
+
+  //Increment total visits. Add the user to unique visitors only once.
+  if (urlDatabase[shortURL].visitsByCreator === 0) {
+    urlDatabase[shortURL].visits += 1;
+    urlDatabase[shortURL].uniqueVisits += 1;
+    urlDatabase[shortURL].visitsByCreator += 1;
+  } else {
+    urlDatabase[shortURL].visits += 1;
+  }
+
+
+  //Increment unique visits if the cookie session is new
+  if (req.session.isNew) {
+    urlDatabase[shortURL].uniqueVisits += 1;
+  }
 
   res.redirect(longURL);
 });

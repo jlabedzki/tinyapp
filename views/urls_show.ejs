@@ -14,11 +14,16 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h5 class="card-title">TinyURL for: <%= longURL %>
+      <h5 class="card-title">TinyURL for: <%= urls[shortURL].longURL %>
       </h5>
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>">
           <%= shortURL %>
-        </a></p>
+        </a></p><br>
+      <p>Total visits: <%= urls[shortURL].visits %>
+      </p>
+      <p>Unique visitors: <%= urls[shortURL].uniqueVisits %>
+      </p>
+      </%>
     </div>
     <div class="card text-center" style="background-color: rgb(235, 235, 235);">
       <div class="card-body" style="display: inline-block; margin: auto;">
