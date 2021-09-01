@@ -61,4 +61,4 @@ Error page
 - Security:
   - all passwords are hashed
   - cookies are encrypted
-  - users can only edit or delete short URLs that they created
+  - users can only edit or delete short URLs that they themselves created
