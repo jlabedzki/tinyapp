@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
+const timestamp = require('time-stamp');
 const { getUserByEmail, generateRandomString, redirectToLogin, urlExistence, validateUserID, credentialValidator, errorHandler } = require('./helpers');
 const bcrypt = require('bcrypt');
 const app = express();
@@ -72,7 +73,6 @@ app.get('/urls/:shortURL', (req, res) => {
 
   //If the short URL doesn't exist, then we give a 404 statuscode
   if (!urlDatabase[shortURL]) {
-    // res.redirect(404, '/urls');
     errorHandler(404, req, res, users);
   }
 
@@ -137,7 +137,7 @@ app.post('/urls', (req, res) => {
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
-    visits: 0,
+    visits: [],
     uniqueVisits: 0,
     visitsByCreator: 0
   };
@@ -160,13 +160,19 @@ app.get('/u/:shortURL', (req, res) => {
   //Assign a link
   const longURL = urlDatabase[shortURL].longURL;
 
+  //Create visitor info
+  const visitorID = req.session.user_id || 'anonymous';
+  const date = timestamp('YYYY/MM/DD');
+  const time = timestamp('HH:mm:ss');
+  const visitorInfo = `(Visitor ID: ${visitorID}) Visited on ${date} at ${time}`;
+
   //Increment total visits. Add the user to unique visitors only once.
   if (urlDatabase[shortURL].visitsByCreator === 0) {
-    urlDatabase[shortURL].visits += 1;
+    urlDatabase[shortURL].visits.push(visitorInfo);
     urlDatabase[shortURL].uniqueVisits += 1;
     urlDatabase[shortURL].visitsByCreator += 1;
   } else {
-    urlDatabase[shortURL].visits += 1;
+    urlDatabase[shortURL].visits.push(visitorInfo);
   }
 
 
@@ -220,14 +226,16 @@ app.put('/urls/:shortURL', (req, res) => {
 app.post('/register', (req, res) => {
 
   //If the user doesn't fill out either the email or password forms, then we give a 400 statuscode
-  credentialValidator(req, res);
+  if (!credentialValidator(req, res)) {
+    errorHandler(400, req, res, users);
+  }
 
   //Use helper function to find a userID by email
   const user = getUserByEmail(req.body.email, users);
 
   //If the email entered matches an existing account's email address, then we give a 400 status code
   if (user) {
-    res.redirect(400, 'back');
+    errorHandler(400, req, res, users);
   }
 
   const randomUserID = generateRandomString();
@@ -251,7 +259,10 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
 
   //If the user doesn't fill either the email or password form, then we give a 400 statuscode
-  credentialValidator(req, res);
+  if (!credentialValidator(req, res)) {
+    errorHandler(400, req, res, users);
+  }
+
 
   //Initialize an email and password match as false, and an undefined userID
   let emailMatch = false;
@@ -279,9 +290,7 @@ app.post('/login', (req, res) => {
   }
 
   //If the password and email do not match to a user in the database, then we give a 403 status code
-  // res.redirect(403, '/login');
-
-  errorHandler(403, res);
+  errorHandler(403, req, res, users);
 });
 
 

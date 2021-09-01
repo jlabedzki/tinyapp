@@ -1,3 +1,4 @@
+
 //Helper function used to get a userID by email
 const getUserByEmail = (email, database) => {
 
@@ -31,16 +32,16 @@ const urlExistence = (shortURL, urlDatabase) => {
 const validateUserID = (shortURL, req, res, urlDatabase) => {
   if (urlDatabase[shortURL].userID !== req.session.user_id) {
     res.redirect(403, '/urls');
-    // return false;
   }
-
-  // return true;
 };
 
 const credentialValidator = (req, res) => {
+
   if (!req.body.email || !req.body.password) {
-    res.redirect(400, '/urls');
+    return false;
   }
+
+  return true;
 };
 
 const errorHandler = (statusCode, req, res, users) => {
@@ -48,6 +49,7 @@ const errorHandler = (statusCode, req, res, users) => {
   const errorMessages = {
     '404': `Oops! The page you're looking for could not be found.`,
     '403': `Sorry! You don't have permission to access that content.`,
+    '400': 'something'
   };
 
   const templateVariables = {

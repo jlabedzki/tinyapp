@@ -4,6 +4,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <link rel="stylesheet" href="../stylesheet.css">
   <title>URL - TinyApp Example</title>
 </head>
 
@@ -14,30 +15,45 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h5 class="card-title">TinyURL for: <%= urls[shortURL].longURL %>
+      <h5 class="card-title">
+        TinyURL for: <%= urls[shortURL].longURL %>
       </h5>
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>">
           <%= shortURL %>
         </a></p><br>
-      <p>Total visits: <%= urls[shortURL].visits %>
+      <p style="font-size: 18px; font-weight: 500;">
+        Total visits: <%= urls[shortURL].visits.length %>
       </p>
-      <p>Unique visitors: <%= urls[shortURL].uniqueVisits %>
+      <p style="font-size: 18px; font-weight: 500;">
+        Unique visitors: <%= urls[shortURL].uniqueVisits %>
       </p>
-      </%>
+      <p style="font-size: 18px; font-weight: 500;">Visitor Info:</p>
+      <div class="card-body"
+        style="position: center; display: inline-block; border: 1px solid rgb(172, 172, 172); height: 150px; width: 600px; background-color: rgb(250, 250, 250); font: 16px/26px; overflow: auto; resize: vertical;">
+        <% for (const visitor of urls[shortURL].visits) { %>
+          <p>
+            <%= urls[shortURL].visits.indexOf(visitor) + 1 %>: <%= visitor %>
+          </p>
+          <% } %>
+      </div>
     </div>
     <div class="card text-center" style="background-color: rgb(235, 235, 235);">
       <div class="card-body" style="display: inline-block; margin: auto;">
-        <h3 class="card-title">Edit</h3>
+        <h3 class="card-title">
+          Edit
+        </h3>
         <form class="form-inline" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
-          <label for="longURL">New URL:</label>
+          <label for="longURL">
+            New URL:
+          </label>
           <input class="form-control" type="text" name="longURL" placeholder="http://"
             style="width: 300px; margin: 1em">
-          <button type="submit" class="btn btn-primary">Update</button>
+          <button type="submit" class="btn btn-primary">
+            Update
+          </button>
         </form>
-
       </div>
     </div>
-    <div class="card-footer text-muted"></div>
   </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
