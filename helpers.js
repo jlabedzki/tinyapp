@@ -54,7 +54,6 @@ const errorHandler = (statusCode, res) => {
   const templateVariables = {
     statusCode,
     errorMessage: errorMessages[statusCode],
-    // user: users[req.session.user_id]
   };
 
   res.render('errors', templateVariables);
