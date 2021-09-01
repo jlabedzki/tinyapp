@@ -1,5 +1,3 @@
-
-//Helper function used to get a userID by email
 const getUserByEmail = (email, database) => {
 
   for (const profile in database) {
@@ -29,17 +27,15 @@ const urlExistence = (shortURL, urlDatabase) => {
   return true;
 };
 
-const validateUserID = (shortURL, req, res, urlDatabase) => {
+const validateUserID = (shortURL, req, urlDatabase) => {
   if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    // res.redirect(403, '/urls');
     return false;
   }
 
   return true;
 };
 
-const credentialValidator = (req, res) => {
-
+const credentialValidator = (req) => {
   if (!req.body.email || !req.body.password) {
     return false;
   }
@@ -47,7 +43,7 @@ const credentialValidator = (req, res) => {
   return true;
 };
 
-const errorHandler = (statusCode, req, res, users) => {
+const errorHandler = (statusCode, res) => {
 
   const errorMessages = {
     '404': `Error 404: Not found.`,
@@ -58,7 +54,7 @@ const errorHandler = (statusCode, req, res, users) => {
   const templateVariables = {
     statusCode,
     errorMessage: errorMessages[statusCode],
-    user: users[req.session.user_id]
+    // user: users[req.session.user_id]
   };
 
   res.render('errors', templateVariables);

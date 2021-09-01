@@ -25,9 +25,6 @@ const urlDatabase = {};
 //Placeholder for user profiles (id, email, password(hashed))
 const users = {};
 
-//Placeholder for url analytics
-const analytics = {};
-
 
 //Redirect to url_index page or login page based on whether or not the user is logged in.
 app.get('/', (req, res) => {
@@ -74,12 +71,12 @@ app.get('/urls/:shortURL', (req, res) => {
 
   //If the short URL doesn't exist, then we give a 404 statuscode
   if (!urlDatabase[shortURL]) {
-    errorHandler(404, req, res, users);
+    errorHandler(404, res);
   }
 
   //If the user tries to view a URL that they didn't create, then we give a 403 status code
-  if (!validateUserID(shortURL, req, res, urlDatabase)) {
-    errorHandler(403, req, res, users);
+  if (!validateUserID(shortURL, req, urlDatabase)) {
+    errorHandler(403, res);
   }
 
   const templateVariables = {
@@ -196,12 +193,12 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
 
   //If the shortURl doesn't exist, then we give a 404 statuscode
   if (!urlExistence(shortURL, urlDatabase)) {
-    errorHandler(404, req, res, users);
+    errorHandler(404, res);
   }
 
   //If the user is trying to delete a shortURL that they didn't create, then we give a 403 statuscode
-  if (!validateUserID(shortURL, req, res, urlDatabase)) {
-    errorHandler(403, req, res, users);
+  if (!validateUserID(shortURL, req, urlDatabase)) {
+    errorHandler(403, res);
   }
 
   delete urlDatabase[shortURL];
@@ -215,12 +212,12 @@ app.put('/urls/:shortURL', (req, res) => {
 
   //If the shortURL is not found, then we give a 404 statuscode
   if (!urlExistence(shortURL, urlDatabase)) {
-    errorHandler(404, req, res, users);
+    errorHandler(404, res);
   }
 
   //If the user is trying to edit a shortURL that they didn't create, then we give a 403 status code
-  if (!validateUserID(shortURL, req, res, urlDatabase)) {
-    errorHandler(403, req, res, users);
+  if (!validateUserID(shortURL, req, urlDatabase)) {
+    errorHandler(403, res);
   }
 
   urlDatabase[shortURL].longURL = req.body.longURL;
@@ -233,8 +230,8 @@ app.put('/urls/:shortURL', (req, res) => {
 app.post('/register', (req, res) => {
 
   //If the user doesn't fill out either the email or password forms, then we give a 400 statuscode
-  if (!credentialValidator(req, res)) {
-    errorHandler(400, req, res, users);
+  if (!credentialValidator(req)) {
+    errorHandler(400, res);
   }
 
   //Use helper function to find a userID by email
@@ -242,7 +239,7 @@ app.post('/register', (req, res) => {
 
   //If the email entered matches an existing account's email address, then we give a 400 status code
   if (user) {
-    errorHandler(400, req, res, users);
+    errorHandler(400, res);
   }
 
   const randomUserID = generateRandomString();
@@ -266,8 +263,8 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
 
   //If the user doesn't fill either the email or password form, then we give a 400 statuscode
-  if (!credentialValidator(req, res)) {
-    errorHandler(400, req, res, users);
+  if (!credentialValidator(req)) {
+    errorHandler(400, res);
   }
 
 
@@ -297,7 +294,7 @@ app.post('/login', (req, res) => {
   }
 
   //If the password and email do not match to a user in the database, then we give a 403 status code
-  errorHandler(403, req, res, users);
+  errorHandler(403, res);
 });
 
 
