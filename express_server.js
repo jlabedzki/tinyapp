@@ -6,6 +6,7 @@ const methodOverride = require('method-override');
 const timestamp = require('time-stamp');
 const { getUserByEmail, generateRandomString, isLoggedIn, urlExistence, validateUserID, credentialInput, errorHandler } = require('./helpers');
 const bcrypt = require('bcrypt');
+const { users, urlDatabase } = require('./data');
 const app = express();
 const PORT = 8080;
 
@@ -18,15 +19,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
-
-
-const urlDatabase = {};
-
-const users = {
-  //id,
-  //email,
-  //password(hashed)
-};
 
 
 app.get('/', (req, res) => {
