@@ -39,8 +39,8 @@ Error page
 ## Getting Started
 
 - Install all dependencies (using the `npm install` command).
-- Run the development web server using the `node express_server.js` command.
-- Head to http://localhost:8080/register to get started!
+- Run the development web server using the `npm start` command.
+- Head over to http://localhost:8080/register to get started!
 
 ## Features
 
