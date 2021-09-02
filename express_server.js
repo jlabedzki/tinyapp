@@ -185,7 +185,6 @@ app.put('/urls/:shortURL', (req, res) => {
     return errorHandler(404, res);
   }
 
-
   if (!validateUserID(shortURL, req, urlDatabase)) {
     return errorHandler(403, res);
   }
@@ -204,7 +203,7 @@ app.post('/register', (req, res) => {
   const user = getUserByEmail(req.body.email, users);
 
   if (user) {
-    //Email already exists in database? Error 400
+    //Email already exists in database?
     return errorHandler(400, res);
   }
 

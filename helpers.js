@@ -43,7 +43,7 @@ const errorHandler = (statusCode, res) => {
   const errorMessages = {
     '404': `Error 404: Not found.`,
     '403': `Error 403: Forbidden.`,
-    '400': `Error 400: Invalid email or password.`
+    '400': `Error 400: Invalid email or password. If you're trying to register, you may have entered an email that's already in our database.`
   };
 
   const templateVariables = {
