@@ -4,6 +4,14 @@ const users = {
   //password(hashed)
 };
 
-const urlDatabase = {};
+const urlDatabase = {
+  /* shortURL: {
+  longURL,
+  userID,
+  visits,
+  uniqueVisits,
+  visitsByCreator
+  } */
+};
 
 module.exports = { users, urlDatabase };
