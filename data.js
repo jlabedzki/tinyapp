@@ -1,8 +1,4 @@
-const users = {
-  //id,
-  //email,
-  //password(hashed)
-};
+const users = { /* id, email, password(hashed) */ };
 
 const urlDatabase = {
   /* shortURL: {
